@@ -1,8 +1,11 @@
 package tv
 
+import "errors"
+
+var ErrInUse = errors.New("the tv is in use")
+
 type TV interface {
-	PowerOn() error
+	Activate() error
 	PowerOff() error
-	DisplayOn() error
 	DisplayOff() error
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/abibby/braviad/config"
 	"github.com/abibby/braviad/tv"
 	winlog "github.com/ofcoursedude/gowinlog"
 )
@@ -28,7 +29,21 @@ func (e *Event) Get(name string) (string, bool) {
 }
 
 func main() {
-	var t tv.TV = &tv.Log{}
+	err := config.Load("./config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg := &tv.BraviaConfig{}
+	err = config.Get(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var t tv.TV = tv.NewBravia(cfg)
+
+	err = t.Activate()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("Starting...")
 	watcher, err := winlog.NewWinLogWatcher()
@@ -73,15 +88,7 @@ func main() {
 				case "3": // Sleep
 					t.PowerOff()
 				case "0":
-					switch previousSessionType {
-					case "1":
-						t.DisplayOn()
-					case "3":
-						t.PowerOn()
-					default:
-						t.PowerOn()
-						t.DisplayOn()
-					}
+					t.Activate()
 				}
 			} else if evt.EventId == 1 {
 				t.PowerOff()
